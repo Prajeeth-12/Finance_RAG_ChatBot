@@ -1,0 +1,151 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- PACKAGES ---
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{lmodern}
+
+% --- COLOR DEFINITIONS ---
+\definecolor{primary}{RGB}{15, 23, 42}       % Dark Slate
+\definecolor{accent}{RGB}{2, 132, 199}       % Sky Blue Accent
+\definecolor{success}{RGB}{16, 185, 129}     % Emerald Green
+\definecolor{lightbg}{RGB}{248, 250, 252}    % Slate Light Background
+\definecolor{cardborder}{RGB}{226, 232, 240} % Light Border
+
+% --- HYPERREF CONFIGURATION ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accent,
+    filecolor=accent,
+    urlcolor=accent,
+    pdftitle={HCLTech Financial RAG Intelligence - Project Summary},
+    pdfauthor={Prajeeth}
+}
+
+% --- SECTION STYLING ---
+\titleformat{\section}{\large\bfseries\color{primary}}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalfont\bfseries\color{accent}}{}{0em}{}
+
+% --- CUSTOM BOX STYLING ---
+\tcbset{
+    colback=lightbg,
+    colframe=accent,
+    fonttitle=\bfseries,
+    coltitle=white,
+    arc=4pt,
+    outer arc=4pt
+}
+
+\begin{document}
+
+% --- HEADER TITLE BANNER ---
+\begin{center}
+    {\Huge \bfseries \color{primary} HCLTech Financial RAG Intelligence}\\[0.4em]
+    {\large Enterprise Retrieval-Augmented Generation (RAG) System for FY26 Financial Filings}\\[0.6em]
+    \small \textbf{GitHub Repository:} \href{https://github.com/Prajeeth-12/Finance_RAG_ChatBot}{https://github.com/Prajeeth-12/Finance\_RAG\_ChatBot}\\[0.2em]
+    \small \textbf{Tech Stack:} NVIDIA NIM API $\cdot$ Llama 3 $\cdot$ ChromaDB $\cdot$ Streamlit $\cdot$ Python 3.10
+\end{center}
+
+\vspace{0.5em}
+\hrule
+\vspace{1em}
+
+% --- EXECUTIVE SUMMARY ---
+\section{1. Executive Summary \& Problem Statement}
+Dense corporate financial reports (such as quarterly earnings releases and 80+ page filings) present a major bottleneck for financial analysts. Locating specific quarterly metrics (e.g., Revenue, EBIT, or Net Income) requires tedious manual search and is prone to error.
+
+\textbf{HCLTech Financial RAG Intelligence} is an enterprise-grade AI chatbot system designed to parse, index, and query HCLTech's FY26 quarterly reports (Q1--Q4). Built using \textbf{NVIDIA NIM Microservices} and \textbf{ChromaDB}, it delivers grounded, instant answers with exact source document citations while enforcing a \textbf{0\% Math Hallucination Guardrail}.
+
+\vspace{0.8em}
+
+% --- SYSTEM ARCHITECTURE & TECH STACK ---
+\section{2. Technical Architecture \& Tech Stack}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Component} & \textbf{Technology / Model Choice} \\
+\midrule
+\textbf{LLM Generator} & \href{https://build.nvidia.com/}{NVIDIA NIM API}: \texttt{meta/llama-3.1-8b-instruct} (~1.5s latency) / \texttt{meta/llama-3.3-70b-instruct} \\
+\textbf{Embeddings} & \href{https://build.nvidia.com/}{NVIDIA NIM API}: \texttt{nvidia/nv-embedqa-e5-v5} (1024-dimensional query \& passage vectors) \\
+\textbf{Vector Database} & \href{https://www.trychroma.com/}{ChromaDB} (Persistent vector database storing 244 document chunks) \\
+\textbf{Text Processing} & \texttt{pypdf} text extractor \& \texttt{LangChain RecursiveCharacterTextSplitter} (1000 char size, 200 overlap) \\
+\textbf{Frontend UI} & \href{https://streamlit.io/}{Streamlit} (Dark financial dashboard with real-time process execution timeline) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\vspace{0.8em}
+
+% --- KEY ENGINEERING INNOVATIONS ---
+\section{3. Key Engineering Innovations \& Guardrails}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{0\% Math Hallucination Guardrail:} Enforces strict prompt rules that prevent the LLM from inventing figures, performing arbitrary arithmetic, or dividing annual totals to estimate quarterly metrics.
+    \item \textbf{Hybrid Domain Re-Ranking:} Combines vector cosine similarity with financial domain-specific heuristic scoring (quarter scoping + metric keyword boosting + annual penalty weights). This prevents vector search from confusing annual figures with quarterly numbers.
+    \item \textbf{NVIDIA NIM Batched Vector Indexing:} Utilizes high-throughput batched API requests (32 chunks per batch) to index 244 financial chunks into ChromaDB in under 5 seconds.
+    \item \textbf{Interactive Process Pipeline UI:} Features a live single-line status bar tracking scope parsing, vector search latency, and LLM synthesis timing.
+\end{itemize}
+
+\vspace{0.8em}
+
+% --- END-TO-END PIPELINE ---
+\section{4. End-to-End System Pipeline}
+
+\begin{enumerate}[leftmargin=1.5em]
+    \item \textbf{PDF Extraction \& Chunking:} Extracts text from \texttt{HCLTech\_Q1\_FY26.pdf} through \texttt{Q4\_FY26.pdf} and creates 244 structured text chunks tagged by source quarter.
+    \item \textbf{Vector Store Generation:} Embeds chunks using \texttt{nvidia/nv-embedqa-e5-v5} (\texttt{input\_type="passage"}) and stores them persistently in ChromaDB.
+    \item \textbf{Query Scope Detection:} Parses user question syntax to identify target quarters (Q1--Q4) and target metric types (Revenue, EBIT, Net Income).
+    \item \textbf{Hybrid Candidate Retrieval:} Queries 1024-dim question embeddings (\texttt{input\_type="query"}), scores top candidates, and extracts top 5 passage chunks.
+    \item \textbf{Grounded LLM Synthesis:} Synthesizes executive financial answers using NVIDIA NIM LLM with zero-temperature strict prompt rules.
+\end{enumerate}
+
+\vspace{0.8em}
+
+% --- VERIFIED BENCHMARKS TABLE ---
+\section{5. Verified Financial Benchmarks \& Results}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{X X l l}
+\toprule
+\textbf{User Question} & \textbf{Grounded LLM Output} & \textbf{Primary Source File} & \textbf{Latency} \\
+\midrule
+What was HCLTech's revenue in Q4 FY26? & INR Revenue of \textbf{INR 33,981 Crores}, up 0.3\% QoQ \& up 12.3\% YoY. & \texttt{HCLTech\_Q4\_FY26.txt} (Chunk 6) & ~1.5s \\
+What was the Net Income in Q1 FY26? & Net Income (NI) at \textbf{INR 3,843 Crores}. & \texttt{HCLTech\_Q1\_FY26.txt} (Chunk 4) & ~1.5s \\
+What was EBIT in Q2 FY26? & INR EBIT at \textbf{INR 5,550 Crores}, up 12.3\% QoQ \& up 3.5\% YoY. & \texttt{HCLTech\_Q2\_FY26.txt} (Chunk 4) & ~1.5s \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\vspace{0.8em}
+
+% --- QUICK START & REPOSITORY LINK ---
+\section{6. Repository Links \& Setup}
+
+\begin{tcolorbox}[title=Project Quick Start]
+\small
+\begin{enumerate}[leftmargin=1.2em, itemsep=2pt]
+    \item \textbf{Clone Repo:} \texttt{git clone https://github.com/Prajeeth-12/Finance\_RAG\_ChatBot.git}
+    \item \textbf{Environment Config:} Set \texttt{NVIDIA\_API\_KEY} in \texttt{.env}
+    \item \textbf{Install Dependencies:} \texttt{pip install -r requirements.txt}
+    \item \textbf{Launch App:} \texttt{streamlit run app.py}
+\end{enumerate}
+\end{tcolorbox}
+
+\vspace{0.5em}
+\begin{center}
+    \small Grounded Financial RAG Assistant $\cdot$ \href{https://github.com/Prajeeth-12/Finance_RAG_ChatBot}{GitHub: Prajeeth-12/Finance\_RAG\_ChatBot}
+\end{center}
+
+\end{document}
